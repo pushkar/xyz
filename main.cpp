@@ -24,8 +24,21 @@ static int mesa = 0;
 using namespace std;
 
 #if 1
+aio_reader* reader;
+uint32_t dsize = 0, rsize = 0;
+
+void fetch_mesa_xyz_buffer() {
+	if(reader->fread(srd_xbuf, &rsize) > 0) printf("Read image with size %d\n", rsize);
+	if(reader->fetchnew() != 0) printf("Failed to cache new data\n");
+
+	if(reader->fread(srd_ybuf, &rsize) > 0) printf("Read image with size %d\n", rsize);
+	if(reader->fetchnew() != 0) printf("Failed to cache new data\n");
+
+	if(reader->fread(srd_zbuf, &rsize) > 0) printf("Read image with size %d\n", rsize);
+	if(reader->fetchnew() != 0) printf("Failed to cache new data\n");
+}
+
 int main(int argc, char* argv[]) {
-	uint32_t dsize = 0, rsize = 0;
 
 	if(mesa) {
 		mesa_init();
@@ -69,45 +82,20 @@ int main(int argc, char* argv[]) {
 	fwriter->fclose();
 #endif
 
-	aio_reader* reader;
 	reader = new aio_reader(dsize, _MAX);
-	if(reader->fopen("mesa_image_buf.dat") < 0) printf("Failed to open file\n");
+	if(reader->fopen("mesa_point_cld.dat") < 0) printf("Failed to open file\n");
 
 	printf("Reading full buffer: %d\n", reader->freadfullbuffer());
 
-	for(int i = 0; i < _MAX*2; i++) {
-		if(reader->fread(srd_distbuf, &rsize) > 0) printf("Read image with size %d\n", rsize);
-		dist_img->imageData = (char*) srd_distbuf;
-		if(reader->fetchnew() != 0) printf("Failed to cache new data\n");
-
-		if(reader->fread(srd_ampbuf, &rsize) > 0) printf("Read image with size %d\n", rsize);
-		ampl_img->imageData = (char*) srd_ampbuf;
-		if(reader->fetchnew() != 0) printf("Failed to cache new data\n");
-
-		if(reader->fread(srd_confbuf, &rsize) > 0) printf("Read image with size %d\n", rsize);
-		conf_img->imageData = (char*) srd_confbuf;
-		if(reader->fetchnew() != 0) printf("Failed to cache new data\n");
-
-		cvNamedWindow("Distance buffer", 1);
-		cvMoveWindow("Distance buffer", 200, 200);
-		cvShowImage("Distance buffer", dist_img);
-
-		cvNamedWindow("Amplitude buffer", 1);
-		cvMoveWindow("Amplitude buffer", 400, 400);
-		cvShowImage("Amplitude buffer", ampl_img);
-
-		cvNamedWindow("Confidence buffer", 1);
-		cvMoveWindow("Confidence buffer", 600, 600);
-		cvShowImage("Confidence buffer", conf_img);
-		cvWaitKey(100);
-	}
-
-	printf("Closing file\n");
-	reader->fclose();
+	fetch_mesa_xyz_buffer();
 
 	gl_init(argc, argv, "Mesa Viewer", 800, 600);
 	glutMainLoop();
+
 	if(mesa) mesa_finish();
+	printf("Closing file\n");
+	reader->fclose();
+
 	return 0;
 }
 

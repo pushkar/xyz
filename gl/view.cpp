@@ -29,8 +29,8 @@ glcamera* camera;
 void MakeGrid(void) {
 	glPushMatrix();
 	glColor3f(0.3f, 0.3f, 0.3f);
-	int k = 1000;
-	int c = 100;
+	int k = 10;
+	int c = 1;
 	for (int i = -k; i < k; i += c) {
 		glBegin(GL_LINES);
 		glVertex3f(i, k, 0.0f);

@@ -29,13 +29,13 @@ void glcamera::init() {
 	aperture = 60;
 	vpos.set_unit_x();
 	vpos.z = -1.0f;
-	vpos.scale(-500);
+	vpos.scale(-0);
 	vdir.set_unit_x();
 	vup.set_unit_z();
 	foc = get_focalvector();
 	focallength = 10.0f;
 	eyesep = focallength/30.0;
-	trans = 10.0f;
+	trans = 0.1f;
 	rots = 0.008;
 }
 
