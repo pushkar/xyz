@@ -30,6 +30,7 @@ endif (_UNITTEST)
 set ( SRC_FILES
 aio_reader
 aio_writer
+sensors/mesa
 main
 )
 
@@ -46,7 +47,7 @@ find_package(OpenGL)
 find_package ( OpenCV REQUIRED )
  
 set(PROGRAMS oglfirst pointers)
-set(CORELIBS ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${OPENCV_LIBRARIES} m rt)
+set(CORELIBS ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${OPENCV_LIBRARIES} mesasr m rt)
  
 include_directories (${HEADERS})
 add_executable (xyz ${SRC})

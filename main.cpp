@@ -5,6 +5,7 @@
  *      Author: pushkar
  */
 
+#include <iostream>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -14,71 +15,94 @@
 
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
+#include "sensors/mesa.h"
 
-#define _MAX 10
+#define _MAX 250
+using namespace std;
 
 #if 1
 int main() {
 	uint32_t dsize = 0, rsize = 0;
+
+	mesa_init();
+	mesa_info();
+	mesa_update();
+	IplImage* dist_img = 0;
+	IplImage* ampl_img = 0;
+	IplImage* conf_img = 0;
+	dist_img = cvCreateImage(cvSize(srd_cols, srd_rows), 16, 1);
+	ampl_img = cvCreateImage(cvSize(srd_cols, srd_rows), 16, 1);
+	conf_img = cvCreateImage(cvSize(srd_cols, srd_rows), 16, 1);
+
+	dsize = srd_buf_len * 2;
+#ifdef WRITE
 	aio_writer* writer;
-	char* wbuffer;
-	char* rbuffer;
-
-	IplImage* img;
-	CvCapture* capture = cvCaptureFromCAM(0);
-	if(!cvGrabFrame(capture)) {
-		printf("Could not grab a frame\n\7");
-		exit(0);
-	}
-
-	img = cvRetrieveFrame(capture);
-	dsize = img->imageSize;
-	wbuffer = (char*) malloc (dsize);
+	aio_writer* fwriter;
 	writer = new aio_writer(dsize, _MAX);
-	if(writer->fopen("file.dat") < 0) printf("Failed to open file\n");
-	cvNamedWindow("Image", 1);
+	fwriter = new aio_writer(dsize, _MAX);
+	if(writer->fopen("mesa_image_buf.dat") < 0) printf("Failed to open file\n");
+	if(fwriter->fopen("mesa_point_cld.dat") < 0) printf("Failed to open file\n");
 
 	int i = 0;
-	while(cvGrabFrame(capture) && i < 15) {
-		img = cvRetrieveFrame(capture);
-		wbuffer = img->imageData;
-		if(writer->fwrite(wbuffer, dsize) != 0)
-			printf("Failed to write at %d\n", i);
+	while(i < 2*_MAX) {
+		mesa_update();
+		if(writer->fwrite((char*) srd_distbuf, dsize) != 0)	printf("Failed to write at %d\n", i);
+		if(writer->fwrite((char*) srd_ampbuf, dsize) != 0)	printf("Failed to write at %d\n", i);
+		if(writer->fwrite((char*) srd_confbuf, dsize) != 0) printf("Failed to write at %d\n", i);
+		if(fwriter->fwrite((char*) srd_xbuf, dsize) != 0) printf("Failed to write at %d\n", i);
+		if(fwriter->fwrite((char*) srd_ybuf, dsize) != 0) printf("Failed to write at %d\n", i);
+		if(fwriter->fwrite((char*) srd_zbuf, dsize) != 0) printf("Failed to write at %d\n", i);
 		printf("Writing %d of size %d\n", i, dsize);
-		cvShowImage("Image", img);
-		cvWaitKey(100);
+		cerr << i << endl;
 		i++;
 	}
 
 	printf("Closing file\n");
 	writer->fclose();
-	cvReleaseCapture(&capture);
-
+	fwriter->fclose();
+#endif
 
 	aio_reader* reader;
-	rbuffer = (char*) malloc (dsize);
 	reader = new aio_reader(dsize, _MAX);
-	if(reader->fopen("file.dat") < 0) printf("Failed to open file\n");
+	if(reader->fopen("mesa_image_buf.dat") < 0) printf("Failed to open file\n");
 
 	printf("Reading full buffer: %d\n", reader->freadfullbuffer());
 
-	for(int i = 0; i < _MAX; i++) {
-		if(reader->fread(rbuffer, &rsize) > 0)
-			printf("Read image with size %d\n", rsize);
-		img->imageData = rbuffer;
-		cvShowImage("Image", img);
-		cvWaitKey(100);
+	for(int i = 0; i < _MAX*2; i++) {
+		if(reader->fread(srd_distbuf, &rsize) > 0) printf("Read image with size %d\n", rsize);
+		dist_img->imageData = (char*) srd_distbuf;
+		if(reader->fetchnew() != 0) printf("Failed to cache new data\n");
 
-		if(reader->fetchnew() != 0)
-			printf("Failed to cache new data\n");
+		if(reader->fread(srd_ampbuf, &rsize) > 0) printf("Read image with size %d\n", rsize);
+		ampl_img->imageData = (char*) srd_ampbuf;
+		if(reader->fetchnew() != 0) printf("Failed to cache new data\n");
+
+		if(reader->fread(srd_confbuf, &rsize) > 0) printf("Read image with size %d\n", rsize);
+		conf_img->imageData = (char*) srd_confbuf;
+		if(reader->fetchnew() != 0) printf("Failed to cache new data\n");
+
+		cvNamedWindow("Distance buffer", 1);
+		cvMoveWindow("Distance buffer", 200, 200);
+		cvShowImage("Distance buffer", dist_img);
+
+		cvNamedWindow("Amplitude buffer", 1);
+		cvMoveWindow("Amplitude buffer", 400, 400);
+		cvShowImage("Amplitude buffer", ampl_img);
+
+		cvNamedWindow("Confidence buffer", 1);
+		cvMoveWindow("Confidence buffer", 600, 600);
+		cvShowImage("Confidence buffer", conf_img);
+		cvWaitKey(100);
 	}
 
 	printf("Closing file\n");
 	reader->fclose();
 
-	cvReleaseImage(&img);
+
+	mesa_finish();
 	return 0;
 }
+
 #else
 int main() {
 	uint32_t dsize = 50;
