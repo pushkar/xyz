@@ -29,5 +29,7 @@ void mesa_info();
 void mesa_update();
 void mesa_plot();
 
+void mesa_mem_init();
+
 
 #endif /* MESA_H_ */

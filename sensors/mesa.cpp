@@ -205,6 +205,23 @@ void mesa_info() {
 	// fprintf(stderr, "Distance Offset: %d\n", SR_GetDistanceOffset(srd_srcam));
 }
 
+void mesa_mem_init() {
+	srd_rows = 144;
+	srd_cols = 176;
+	srd_len = srd_rows * srd_cols;
+	srd_xbuf = (float*) malloc(sizeof(float) * srd_len);
+	srd_ybuf = (float*) malloc(sizeof(float) * srd_len);
+	srd_zbuf = (float*) malloc(sizeof(float) * srd_len);
+	srd_buf_len = sizeof(unsigned char) * srd_len;
+	srd_distbuf = (unsigned char*) malloc(sizeof(unsigned char) * srd_len);
+	srd_ampbuf = (unsigned char*) malloc(sizeof(unsigned char) * srd_len);
+	srd_confbuf = (unsigned char*) malloc(sizeof(unsigned char) * srd_len);
+	if (NULL == srd_xbuf || NULL == srd_ybuf || NULL == srd_zbuf) {
+		fprintf(stderr, "Couldn't malloc {x, y, z} buffer\n");
+		exit(-1);
+	}
+}
+
 /// Only opens the camera and allocates memory to global data structures
 void mesa_init() {
 	fprintf(stderr, "Opening Camera on %s\n", opt_host);

@@ -18,15 +18,20 @@
 #include "sensors/mesa.h"
 
 #define _MAX 250
+static int mesa = 0;
 using namespace std;
 
 #if 1
 int main() {
 	uint32_t dsize = 0, rsize = 0;
 
-	mesa_init();
-	mesa_info();
-	mesa_update();
+	if(mesa) {
+		mesa_init();
+		mesa_info();
+		mesa_update();
+	}
+	else
+		mesa_mem_init();
 	IplImage* dist_img = 0;
 	IplImage* ampl_img = 0;
 	IplImage* conf_img = 0;
@@ -98,8 +103,7 @@ int main() {
 	printf("Closing file\n");
 	reader->fclose();
 
-
-	mesa_finish();
+	if(mesa) mesa_finish();
 	return 0;
 }
 
