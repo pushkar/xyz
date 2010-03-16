@@ -31,6 +31,10 @@ set ( SRC_FILES
 aio_reader
 aio_writer
 sensors/mesa
+gl/glcamera
+gl/glstdlib
+gl/main
+gl/view
 main
 )
 

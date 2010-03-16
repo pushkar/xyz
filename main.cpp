@@ -16,13 +16,15 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include "sensors/mesa.h"
+#include "gl/main.h"
+#include "gl/view.h"
 
 #define _MAX 250
 static int mesa = 0;
 using namespace std;
 
 #if 1
-int main() {
+int main(int argc, char* argv[]) {
 	uint32_t dsize = 0, rsize = 0;
 
 	if(mesa) {
@@ -103,6 +105,8 @@ int main() {
 	printf("Closing file\n");
 	reader->fclose();
 
+	gl_init(argc, argv, "Mesa Viewer", 800, 600);
+	glutMainLoop();
 	if(mesa) mesa_finish();
 	return 0;
 }
