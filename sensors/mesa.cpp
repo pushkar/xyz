@@ -212,10 +212,10 @@ void mesa_mem_init() {
 	srd_xbuf = (float*) malloc(sizeof(float) * srd_len);
 	srd_ybuf = (float*) malloc(sizeof(float) * srd_len);
 	srd_zbuf = (float*) malloc(sizeof(float) * srd_len);
+	srd_ampbuf = (unsigned char*) malloc (sizeof(int)*2*srd_len);
+	srd_confbuf = (unsigned char*) malloc (sizeof(int)*2*srd_len);
+	srd_distbuf = (unsigned char*) malloc (sizeof(int)*2*srd_len);
 	srd_buf_len = sizeof(unsigned char) * srd_len;
-	srd_distbuf = (unsigned char*) malloc(sizeof(unsigned char) * srd_len);
-	srd_ampbuf = (unsigned char*) malloc(sizeof(unsigned char) * srd_len);
-	srd_confbuf = (unsigned char*) malloc(sizeof(unsigned char) * srd_len);
 	if (NULL == srd_xbuf || NULL == srd_ybuf || NULL == srd_zbuf) {
 		fprintf(stderr, "Couldn't malloc {x, y, z} buffer\n");
 		exit(-1);
@@ -243,9 +243,6 @@ void mesa_init() {
 		srd_ybuf = (float*) malloc(sizeof(float) * srd_len);
 		srd_zbuf = (float*) malloc(sizeof(float) * srd_len);
 		srd_buf_len = sizeof(unsigned char) * srd_len;
-		srd_distbuf = (unsigned char*) malloc(sizeof(unsigned char) * srd_len);
-		srd_ampbuf = (unsigned char*) malloc(sizeof(unsigned char) * srd_len);
-		srd_confbuf = (unsigned char*) malloc(sizeof(unsigned char) * srd_len);
 		if (NULL == srd_xbuf || NULL == srd_ybuf || NULL == srd_zbuf) {
 			fprintf(stderr, "Couldn't malloc {x, y, z} buffer\n");
 			mesa_finish();
