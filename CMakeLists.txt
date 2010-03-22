@@ -30,6 +30,7 @@ endif (_UNITTEST)
 set ( SRC_FILES
 aio_reader
 aio_writer
+flow
 sensors/mesa
 gl/glcamera
 gl/glstdlib
