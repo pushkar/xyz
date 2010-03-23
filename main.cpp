@@ -22,9 +22,9 @@
 #include "gl/view.h"
 
 #define READER2
-#define _FILE_IMG_BUF "mesa_chess_img_rnd3_buf.dat"
-#define _FILE_PNT_CLD "mesa_chess_pnt_rnd3_cld.dat"
-#define _MAX 250
+#define _FILE_IMG_BUF "../logs/mesa_chess_img_rnd3_buf.dat"
+#define _FILE_PNT_CLD "../logs/mesa_chess_pnt_rnd3_cld.dat"
+#define _MAX 249
 static int mesa = 0;
 using namespace std;
 
@@ -34,8 +34,9 @@ uint32_t dsize = 0, rsize = 0;
 IplImage* dist_img;  IplImage* dist_img_1;  IplImage* dist_img_2;
 IplImage* ampl_img;  IplImage* ampl_img_1;  IplImage* ampl_img_2;
 IplImage* conf_img;  IplImage* conf_img_1;  IplImage* conf_img_2;
-IplImage* velx;  IplImage* vely;
+IplImage* velx;  IplImage* vely;  IplImage* velz;
 CvScalar vx, vy, vz;
+float _vx, _vy, _vz;
 
 void fetch_mesa_xyz_buffer() {
 	if(reader->fread(srd_xbuf, &rsize) <= 0) printf("Error reading image with size %d\n", rsize);
@@ -61,6 +62,10 @@ void fetch_mesa_img_buffer() {
 
 int main(int argc, char* argv[]) {
 
+	if(argc > 1) {
+		printf("Functionality to use %s is not made yet.\n", argv[1]);
+	}
+
 	if(mesa) {
 		mesa_init();
 		mesa_info();
@@ -82,6 +87,7 @@ int main(int argc, char* argv[]) {
 	conf_img_2 = cvCreateImage(cvSize(srd_cols, srd_rows), IPL_DEPTH_8U, 1);
 	velx = cvCreateImage(cvSize(srd_cols, srd_rows), IPL_DEPTH_32F, 1);
 	vely = cvCreateImage(cvSize(srd_cols, srd_rows), IPL_DEPTH_32F, 1);
+	velz = cvCreateImage(cvSize(srd_cols, srd_rows), IPL_DEPTH_32F, 1);
 
 	dist_img_disp = cvCreateImage(cvSize(srd_cols*2, srd_rows*2), IPL_DEPTH_8U, 1);
 	ampl_img_disp = cvCreateImage(cvSize(srd_cols*2, srd_rows*2), IPL_DEPTH_8U, 1);
@@ -178,6 +184,8 @@ int main(int argc, char* argv[]) {
 	if(reader->fopen(_FILE_IMG_BUF) < 0) printf("Failed to open file\n");
 
 	printf("Reading full buffer: %d\n", reader->freadfullbuffer());
+
+	CvScalar t;
 	while(1) {
 		fetch_mesa_img_buffer();
 		conf_img->imageData = (char*) srd_confbuf;
@@ -193,8 +201,24 @@ int main(int argc, char* argv[]) {
 		cvCalcOpticalFlowLK(ampl_img_2, ampl_img_1, cvSize(5, 5), velx, vely);
 		vx = cvAvg(velx);
 		vy = cvAvg(vely);
+		vz = cvAvg(dist_img);
+		_vx = vx.val[0] * 10.0f;
+		_vy = vy.val[0] * 10.0f;
+		_vz = vz.val[0] - t.val[0];
+		printf("Vel is %.2f, %.2f, %.2f\n", _vx, _vy, _vz);
+		cvDrawRect(dist_img, cvPoint(0+_vx, 0+_vy), cvPoint(dist_img->width+_vx, dist_img->height+_vy), cvScalar(255, 255, 255, 255), 1, 8, 0);
 
-		cvDrawLine(dist_img, cvPoint(dist_img->width/2, dist_img->height/2), cvPoint(dist_img->width/2+vx.val[0]*20, dist_img->height/2+vy.val[0]*20), cvScalar(255, 255, 255, 255), 4);
+#if 0
+		for (int i = 0; i < dist_img->height; i+=10) {
+			for (int j = 0; j < dist_img->width; j+=10) {
+				vx = cvGet2D(velx, i, j);
+				vy = cvGet2D(vely, i, j);
+				cvDrawLine(dist_img, cvPoint(j, i), cvPoint(j+vy.val[0], i+vx.val[0]),
+						cvScalar(255, 255, 255, 255), 1);
+			}
+		}
+#endif
+
 
 		cvNamedWindow("Distance", 1); cvMoveWindow("Distance", 0, 0); cvShowImage("Distance", dist_img);
 		cvNamedWindow("Amplitude", 1); cvMoveWindow("Amplitude", 200, 0); cvShowImage("Amplitude", ampl_img);
@@ -204,6 +228,7 @@ int main(int argc, char* argv[]) {
 		dist_img_2 = cvCloneImage(dist_img_1);
 		conf_img_2 = cvCloneImage(conf_img_1);
 		ampl_img_2 = cvCloneImage(ampl_img_1);
+		t = vz;
 	}
 
 #endif
