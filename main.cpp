@@ -38,6 +38,9 @@ IplImage* temp;
 Flow* flow;
 CvPoint2D32f corners[100];
 CvKalman* kalman;
+CvMat* state;
+CvMat* measurement;
+CvMat* process_noise;
 
 void fetch_mesa_xyz_buffer() {
 	if(reader_p->fread(srd_xbuf, &rsize) <= 0) printf("Error reading image with size %d\n", rsize);
@@ -115,7 +118,7 @@ void draw_img_frame() {
 		cvDrawCircle(ampl_img_8, cvPoint(corners[i].x, corners[i].y), 4, cvScalar(255, 255, 255, 0), 2, 8, 0);
 	}
 
-	fprintf(stderr, "Vel is %.2f, %.2f, %.2f, Corners: %d\n", v.x, v.y, v.z, corner_count	);
+	// fprintf(stderr, "Vel is %.2f, %.2f, %.2f, Corners: %d\n", v.x, v.y, v.z, corner_count	);
 
 	cvNamedWindow("Distance", 1); cvMoveWindow("Distance", 0, 0); cvShowImage("Distance", dist_img);
 	cvNamedWindow("Amplitude", 1); cvMoveWindow("Amplitude", 200, 0); cvShowImage("Amplitude", ampl_img_8);
@@ -153,7 +156,17 @@ int main(int argc, char* argv[]) {
 	dsize = srd_buf_len * 2;
 	flow = new Flow();
 	kalman = cvCreateKalman(3, 3, 0);
-	cvReleaseKalman(&kalman);
+	float A[] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
+	state = cvCreateMat(3, 1, CV_32FC1);
+	measurement = cvCreateMat(3, 1, CV_32FC1);
+	process_noise = cvCreateMat(3, 1, CV_32FC1);
+	cvZero(measurement);
+	memcpy( kalman->transition_matrix->data.fl, A, sizeof(A));
+	cvSetIdentity( kalman->measurement_matrix, cvRealScalar(1) );
+	cvSetIdentity( kalman->process_noise_cov, cvRealScalar(1e-2) );
+	cvSetIdentity( kalman->measurement_noise_cov, cvRealScalar(1e-1) );
+	cvSetIdentity( kalman->error_cov_post, cvRealScalar(1));
+	cvZero(kalman->state_post);
 
 	if (log) {
 		write();
@@ -178,6 +191,7 @@ int main(int argc, char* argv[]) {
 		reader_p->fclose();
 	}
 
+	cvReleaseKalman(&kalman);
 	if(mesa) mesa_finish();
 	delete flow;
 	return 0;

@@ -28,6 +28,11 @@ extern IplImage* dist_img;
 extern IplImage* ampl_img;
 extern IplImage* conf_img;
 extern Flow* flow;
+extern CvKalman* kalman;
+extern CvMat* state;
+extern CvMat* measurement;
+extern CvMat* process_noise;
+extern CvPoint3D32f kalman_v;
 
 void draw_img_frame();
 void draw_mesa_frame();
