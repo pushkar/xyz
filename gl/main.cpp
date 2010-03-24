@@ -30,12 +30,10 @@ void _draw() {
 	if(mesa) {
 		mesa_update();
 	}
-
-	{
+	else {
 		fetch_mesa_xyz_buffer();
 		fetch_mesa_img_buffer();
 	}
-
 
 	draw_img_frame();
 	draw_mesa_frame();
@@ -44,8 +42,8 @@ void _draw() {
 void draw_mesa_frame() {
 	int n = 0;
 	CvPoint3D32f v;
-	for (int i = 0; i < srd_rows; i+=1) {
-		for (int j = 0; j < srd_cols; j+=1) {
+	for (int i = 0; i < srd_rows; i+=5) {
+		for (int j = 0; j < srd_cols; j+=5) {
 			n = i * srd_cols + j;
 			double len = srd_xbuf[n] * srd_xbuf[n] + srd_ybuf[n] * srd_ybuf[n]
 					+ srd_zbuf[n] * srd_zbuf[n];
@@ -60,7 +58,7 @@ void draw_mesa_frame() {
 				v = flow->get_velocity(cvPoint2D32f(i, j));
 				glBegin(GL_LINES);
 				glVertex3f(srd_zbuf[n], srd_xbuf[n], srd_ybuf[n]);
-				glVertex3f(srd_zbuf[n]+v.z/1000.0f, srd_xbuf[n]+v.x/1000.0f, srd_ybuf[n]+v.y/1000.0f);
+				glVertex3f(srd_zbuf[n]-v.z/100.0f, srd_xbuf[n]+v.x/1000.0f, srd_ybuf[n]+v.y/1000.0f);
 				glEnd();
 			}
 		}

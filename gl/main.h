@@ -18,11 +18,10 @@
 #include "../gl/view.h"
 #include "../flow.h"
 
-#define READER1
-#define _FILE_IMG_BUF "../logs/mesa_chess_img_rnd3_buf.dat"
-#define _FILE_PNT_CLD "../logs/mesa_chess_pnt_rnd3_cld.dat"
+#define _FILE_IMG_BUF "../logs/rnd8t_img.dat"
+#define _FILE_PNT_CLD "../logs/rnd8t_cld.dat"
 #define _MAX 249
-static int mesa = 0;
+extern int mesa;
 
 extern CvScalar vx, vy, vz;
 extern IplImage* dist_img;
