@@ -16,16 +16,19 @@
 #include "../sensors/mesa.h"
 #include "../gl/main.h"
 #include "../gl/view.h"
+#include "../flow.h"
+
+#define READER2
+#define _FILE_IMG_BUF "../logs/mesa_chess_img_rnd3_buf.dat"
+#define _FILE_PNT_CLD "../logs/mesa_chess_pnt_rnd3_cld.dat"
+#define _MAX 249
+static int mesa = 0;
 
 extern CvScalar vx, vy, vz;
-extern IplImage* dist_img; extern IplImage* dist_img_1; extern IplImage* dist_img_2;
-extern IplImage* ampl_img; extern IplImage* ampl_img_1; extern IplImage* ampl_img_2;
-extern IplImage* conf_img; extern IplImage* conf_img_1; extern IplImage* conf_img_2;
-extern IplImage* velx; extern IplImage* vely;
-extern IplImage* dist_img_disp;
-extern IplImage* ampl_img_disp;
-extern IplImage* conf_img_disp;
-extern IplImage* yz;
+extern IplImage* dist_img;
+extern IplImage* ampl_img;
+extern IplImage* conf_img;
+extern Flow* flow;
 
 void draw_mesa_frame();
 void fetch_mesa_xyz_buffer();
