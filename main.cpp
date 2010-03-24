@@ -41,6 +41,7 @@ CvKalman* kalman;
 CvMat* state;
 CvMat* measurement;
 CvMat* process_noise;
+vector<CvPoint3D32f> landmarks;
 
 void fetch_mesa_xyz_buffer() {
 	if(reader_p->fread(srd_xbuf, &rsize) <= 0) printf("Error reading image with size %d\n", rsize);
@@ -113,12 +114,14 @@ void draw_img_frame() {
 	flow->draw(&dist_img);
 	int corner_count = 100;
 	ampl_img_8 = flow->get_ampl_8();
-	cvGoodFeaturesToTrack(ampl_img_8, eig, temp, corners, &corner_count, 0.01, 50, NULL, 5, true);
+	cvGoodFeaturesToTrack(ampl_img_8, eig, temp, corners, &corner_count, 0.5, 100, NULL, 5, true);
 	for(int i = 0; i < corner_count; i++) {
 		cvDrawCircle(ampl_img_8, cvPoint(corners[i].x, corners[i].y), 4, cvScalar(255, 255, 255, 0), 2, 8, 0);
+		int n = corners[i].x * srd_cols + corners[i].y;
+		landmarks.push_back(cvPoint3D32f(srd_xbuf[n], srd_ybuf[n], srd_zbuf[n]));
 	}
 
-	// fprintf(stderr, "Vel is %.2f, %.2f, %.2f, Corners: %d\n", v.x, v.y, v.z, corner_count	);
+	// fprintf(stderr, "Vel is %.2f, %.2f, %.2f, Corners: %d\n", v.x, v.y, v.z, corner_count);
 
 	cvNamedWindow("Distance", 1); cvMoveWindow("Distance", 0, 0); cvShowImage("Distance", dist_img);
 	cvNamedWindow("Amplitude", 1); cvMoveWindow("Amplitude", 200, 0); cvShowImage("Amplitude", ampl_img_8);
@@ -155,16 +158,22 @@ int main(int argc, char* argv[]) {
 	temp = cvCreateImage(cvSize(srd_cols, srd_rows), IPL_DEPTH_32F, 1);
 	dsize = srd_buf_len * 2;
 	flow = new Flow();
-	kalman = cvCreateKalman(3, 3, 0);
-	float A[] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
-	state = cvCreateMat(3, 1, CV_32FC1);
+	kalman = cvCreateKalman(6, 3, 0);
+	double s = 0.001f;
+	float A[] = {1, 0, 0, s, 0, 0,
+				 0, 1, 0, 0, s, 0,
+				 0, 0, 1, 0, 0, s*100,
+				 0, 0, 0, 1, 0, 0,
+				 0, 0, 0, 0, 1, 0,
+				 0, 0, 0, 0, 0, 1};
+	state = cvCreateMat(6, 1, CV_32FC1);
 	measurement = cvCreateMat(3, 1, CV_32FC1);
-	process_noise = cvCreateMat(3, 1, CV_32FC1);
+	process_noise = cvCreateMat(6, 1, CV_32FC1);
 	cvZero(measurement);
 	memcpy( kalman->transition_matrix->data.fl, A, sizeof(A));
 	cvSetIdentity( kalman->measurement_matrix, cvRealScalar(1) );
-	cvSetIdentity( kalman->process_noise_cov, cvRealScalar(1e-2) );
-	cvSetIdentity( kalman->measurement_noise_cov, cvRealScalar(1e-1) );
+	cvSetIdentity( kalman->process_noise_cov, cvRealScalar(1e-6) );
+	cvSetIdentity( kalman->measurement_noise_cov, cvRealScalar(1e1) );
 	cvSetIdentity( kalman->error_cov_post, cvRealScalar(1));
 	cvZero(kalman->state_post);
 

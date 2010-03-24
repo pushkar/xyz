@@ -13,13 +13,15 @@
 #include <opencv/highgui.h>
 #include <opencv/cvaux.h>
 #include <opencv/cxcore.h>
+#include <iostream>
+#include <vector>
 #include "../sensors/mesa.h"
 #include "../gl/main.h"
 #include "../gl/view.h"
 #include "../flow.h"
 
-#define _FILE_IMG_BUF "../logs/rnd8t_img.dat"
-#define _FILE_PNT_CLD "../logs/rnd8t_cld.dat"
+#define _FILE_IMG_BUF "../logs/rnd4_img.dat"
+#define _FILE_PNT_CLD "../logs/rnd4_cld.dat"
 #define _MAX 249
 extern int mesa;
 
@@ -33,6 +35,9 @@ extern CvMat* state;
 extern CvMat* measurement;
 extern CvMat* process_noise;
 extern CvPoint3D32f kalman_v;
+extern CvPoint3D32f kalman_lp;
+extern std::vector<CvPoint3D32f> kalman_p;
+extern std::vector<CvPoint3D32f> landmarks;
 
 void draw_img_frame();
 void draw_mesa_frame();
