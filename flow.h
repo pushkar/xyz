@@ -32,6 +32,7 @@ public:
 	void end_flow();
 
 	CvPoint3D32f get_velocity();
+	CvPoint3D32f get_velocity(CvPoint2D32f point);
 	void draw(IplImage** img);
 	IplImage* get_ampl_8() { return cvCloneImage(ampl_img_1); }
 	IplImage* get_dist_8() { return cvCloneImage(dist_img_1); }

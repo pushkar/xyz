@@ -93,6 +93,16 @@ CvPoint3D32f Flow::get_velocity() {
 	return v;
 }
 
+CvPoint3D32f Flow::get_velocity(CvPoint2D32f point) {
+	CvPoint3D32f v;
+	int i = point.x;
+	int j = point.y;
+	v.x = cvGet2D(velx, i, j).val[0];
+	v.y = cvGet2D(vely, i, j).val[0];
+	v.z = cvGet2D(velz, i, j).val[0];
+	return v;
+}
+
 void Flow::draw(IplImage** img) {
 	for (int i = 0; i < dist_img_1->height; i+=10) {
 		for (int j = 0; j < dist_img_1->width; j+=10) {
