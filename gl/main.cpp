@@ -14,7 +14,7 @@
 #include "../sensors/mesa.h"
 
 std::deque<unsigned int> displaylist_mesa;
-unsigned int displaylist_mesa_max = 100;
+unsigned int displaylist_mesa_max = 50;
 
 CvPoint3D32f kalman_v;
 CvPoint3D32f kalman_lp;
@@ -110,8 +110,8 @@ void _draw() {
 void draw_mesa_frame() {
 	int n = 0;
 	//glTranslatef(kalman_lp.z, kalman_lp.x, kalman_lp.y);
-	for (int i = 0; i < srd_rows; i+=15) {
-		for (int j = 0; j < srd_cols; j+=15) {
+	for (int i = 0; i < srd_rows; i+=2) {
+		for (int j = 0; j < srd_cols; j+=2) {
 			n = i * srd_cols + j;
 			double len = srd_xbuf[n] * srd_xbuf[n] + srd_ybuf[n] * srd_ybuf[n]
 					+ srd_zbuf[n] * srd_zbuf[n];
@@ -128,7 +128,7 @@ void draw_mesa_frame() {
 
 				CvPoint3D32f v = flow->get_velocity(cvPoint2D32f(i, j));
 				v = kalman_v;
-				double scale = 200.0f;
+				double scale = 500.0f;
 				glBegin(GL_LINES);
 				double x = srd_xbuf[n]+kalman_lp.x;
 				double y = srd_ybuf[n]+kalman_lp.y;

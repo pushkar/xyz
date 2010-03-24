@@ -114,11 +114,11 @@ void draw_img_frame() {
 	flow->draw(&dist_img);
 	int corner_count = 100;
 	ampl_img_8 = flow->get_ampl_8();
-	cvGoodFeaturesToTrack(ampl_img_8, eig, temp, corners, &corner_count, 0.5, 100, NULL, 5, true);
+	cvGoodFeaturesToTrack(ampl_img_8, eig, temp, corners, &corner_count, 0.95, 100, NULL, 5, true);
 	for(int i = 0; i < corner_count; i++) {
 		cvDrawCircle(ampl_img_8, cvPoint(corners[i].x, corners[i].y), 4, cvScalar(255, 255, 255, 0), 2, 8, 0);
 		int n = corners[i].x * srd_cols + corners[i].y;
-		landmarks.push_back(cvPoint3D32f(srd_xbuf[n], srd_ybuf[n], srd_zbuf[n]));
+		landmarks.push_back(cvPoint3D32f(kalman_lp.x+srd_xbuf[n], kalman_lp.y+srd_ybuf[n], kalman_lp.z+srd_zbuf[n]));
 	}
 
 	// fprintf(stderr, "Vel is %.2f, %.2f, %.2f, Corners: %d\n", v.x, v.y, v.z, corner_count);
@@ -159,7 +159,7 @@ int main(int argc, char* argv[]) {
 	dsize = srd_buf_len * 2;
 	flow = new Flow();
 	kalman = cvCreateKalman(6, 3, 0);
-	double s = 0.001f;
+	double s = 0.0035f;
 	float A[] = {1, 0, 0, s, 0, 0,
 				 0, 1, 0, 0, s, 0,
 				 0, 0, 1, 0, 0, s*100,
@@ -172,8 +172,8 @@ int main(int argc, char* argv[]) {
 	cvZero(measurement);
 	memcpy( kalman->transition_matrix->data.fl, A, sizeof(A));
 	cvSetIdentity( kalman->measurement_matrix, cvRealScalar(1) );
-	cvSetIdentity( kalman->process_noise_cov, cvRealScalar(1e-6) );
-	cvSetIdentity( kalman->measurement_noise_cov, cvRealScalar(1e1) );
+	cvSetIdentity( kalman->process_noise_cov, cvRealScalar(1e-5) );
+	cvSetIdentity( kalman->measurement_noise_cov, cvRealScalar(1e2) );
 	cvSetIdentity( kalman->error_cov_post, cvRealScalar(1));
 	cvZero(kalman->state_post);
 
